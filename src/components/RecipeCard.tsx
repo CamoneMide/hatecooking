@@ -1,9 +1,10 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { Image } from "expo-image";
 import { Clock, Flame, ChefHat, Trash2 } from "lucide-react-native";
 import { Link } from "expo-router";
 import { Recipe } from "../store/useRecipeStore";
+import { getEmojiForIngredient } from "../utils/emojis";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -11,16 +12,28 @@ interface RecipeCardProps {
 }
 
 export const RecipeCard = memo(function RecipeCard({ recipe, onRemove }: RecipeCardProps) {
+  const [imageError, setImageError] = useState(false);
+
   return (
     <View className="mb-6 relative">
       <Link href={`/recipe/${recipe.id}`} asChild>
         <Pressable className="rounded-3xl overflow-hidden bg-deepBlack border border-softWhite/10 active:opacity-80">
-          <Image
-            source={{ uri: recipe.image }}
-            className="w-full h-56"
-            contentFit="cover"
-            transition={200}
-          />
+          {/* Thumbnail with emoji fallback */}
+          {imageError || !recipe.image ? (
+            <View className="w-full h-56 bg-[#1A1A1A] items-center justify-center">
+              <View className="w-24 h-24 rounded-full bg-softWhite/5 border border-softWhite/10 items-center justify-center">
+                <Text style={{ fontSize: 44 }}>{getEmojiForIngredient(recipe.title)}</Text>
+              </View>
+            </View>
+          ) : (
+            <Image
+              source={{ uri: recipe.image }}
+              className="w-full h-56"
+              contentFit="cover"
+              transition={200}
+              onError={() => setImageError(true)}
+            />
+          )}
 
           <View className="p-5">
             {/* Tags row */}
